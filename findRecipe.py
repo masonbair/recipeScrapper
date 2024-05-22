@@ -21,20 +21,94 @@ beaut = BeautifulSoup(html_text, 'lxml')
 
 def findIngredients(soup):
     ingredient_class_list = []
-    ingredient_class_list = findSpecificname('ingredients', ingredient_class_list)
+    # Holds all the ingredient info to check for duplicates
+    ingredient_text_list = []
+    search_for_names = ['ingredients']
+    ingredient_class_list = findSpecificname(search_for_names, ingredient_class_list)
+    if ingredient_class_list[0] == 'empty':
+        print("No ingredients found")
+        return
     for single_ingredients in ingredient_class_list:
         texts = single_ingredients.find_all(text_tags)
         for text in texts:
+            if text.text.split() not in ingredient_text_list:
+                ingredient_text_list.append(text.text.split())
+                print(text.text.strip())
+
+def findInstructions(soup):
+    instructions_class_list = []
+    search_for_names = ['instructions', 'directions', 'steps']
+    instructions_class_list = findSpecificname(search_for_names, instructions_class_list)
+    instruction_text_tag = ['li']
+    if instructions_class_list[0] == 'empty':
+        print("No instructions found")
+        return
+    for single_instruction in instructions_class_list:
+        texts = single_instruction.find_all(instruction_text_tag)
+        for index, text in enumerate(texts):
+            if text.text.strip() == "Ingredients":
+                print(text.text.strip())
+            else:
+                print(f"{index}: {text.text.strip()}")
+
+def findNotes(soup):
+    notes_class_list = []
+    search_for_names = ['notes']
+    span_and_text = text_tags
+    span_and_text.append('span')
+    notes_class_list = findSpecificname(search_for_names, notes_class_list)
+    if notes_class_list[0] == 'empty':
+        print("No notes found")
+        return
+    for single_note in notes_class_list:
+        texts = single_note.find_all(span_and_text)
+        for text in texts:
             print(text.text)
 
-def findSpecificname(name, list):
-    for ingredients in beaut.find_all('div', class_=True):
-        for c_name in ingredients["class"]:
+def findSpecificname(names, list):
+    for recipe_item in beaut.find_all('div', class_=True):
+        for c_name in recipe_item["class"]:
             split_c_name = c_name.split('-')
-            if "ingredients" in split_c_name:
-                list.append(ingredients)
-                return list
+            for name in names:
+                if name in split_c_name:
+                    list.append(recipe_item)
+                    return list
+            split_c_name = c_name.split(' ')
+            for name in names:
+                if name in split_c_name:
+                    list.append(recipe_item)
+                    return list
+            split_c_name = c_name.split('__')
+            for name in names:
+                if name in split_c_name:
+                    list.append(recipe_item)
+                    return list
+
+    for recipe_item_2 in beaut.find_all('section', class_=True):
+        for c_name in recipe_item_2["class"]:
+            split_c_name = c_name.split('-')
+            for name in names:
+                if name in split_c_name:
+                    list.append(recipe_item_2)
+                    return list
+            split_c_name = c_name.split(' ')
+            for name in names:
+                if name in split_c_name:
+                    list.append(recipe_item_2)
+                    return list
+    for recipe_item_3 in beaut.find_all('article', class_=True):
+        for c_name in recipe_item_3["class"]:
+            split_c_name = c_name.split('__')
+            for name in names:
+                if name in split_c_name:
+                    list.append(recipe_item_3)
+                    return list
+
+    return ['empty']
+
 
 
 if __name__ == '__main__':
     findIngredients(beaut)
+    findInstructions(beaut)
+    findNotes(beaut)
