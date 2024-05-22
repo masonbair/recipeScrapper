@@ -11,8 +11,11 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36",
     # noqa
 }
-
+# These are the tags the scapper looks at to find text data
 text_tags = ['p', 'h1', 'h2', 'h3', 'h4', 'li']
+
+# This helps to make more websites accessible to be scrapped
+search_tags = ['div', 'section', 'article']
 
 webUrl = input("Please enter a recipe website URL: ")
 req = requests.Session()
@@ -46,7 +49,7 @@ def findInstructions(soup):
     for single_instruction in instructions_class_list:
         texts = single_instruction.find_all(instruction_text_tag)
         for index, text in enumerate(texts):
-            if text.text.strip() == "Ingredients":
+            if text.text.strip() == "Ingredients" or text.text.strip() == "Directions":
                 print(text.text.strip())
             else:
                 print(f"{index}: {text.text.strip()}")
@@ -66,43 +69,24 @@ def findNotes(soup):
             print(text.text)
 
 def findSpecificname(names, list):
-    for recipe_item in beaut.find_all('div', class_=True):
-        for c_name in recipe_item["class"]:
-            split_c_name = c_name.split('-')
-            for name in names:
-                if name in split_c_name:
-                    list.append(recipe_item)
-                    return list
-            split_c_name = c_name.split(' ')
-            for name in names:
-                if name in split_c_name:
-                    list.append(recipe_item)
-                    return list
-            split_c_name = c_name.split('__')
-            for name in names:
-                if name in split_c_name:
-                    list.append(recipe_item)
-                    return list
-
-    for recipe_item_2 in beaut.find_all('section', class_=True):
-        for c_name in recipe_item_2["class"]:
-            split_c_name = c_name.split('-')
-            for name in names:
-                if name in split_c_name:
-                    list.append(recipe_item_2)
-                    return list
-            split_c_name = c_name.split(' ')
-            for name in names:
-                if name in split_c_name:
-                    list.append(recipe_item_2)
-                    return list
-    for recipe_item_3 in beaut.find_all('article', class_=True):
-        for c_name in recipe_item_3["class"]:
-            split_c_name = c_name.split('__')
-            for name in names:
-                if name in split_c_name:
-                    list.append(recipe_item_3)
-                    return list
+    for tag in search_tags:
+        for recipe_item in beaut.find_all(tag, class_=True):
+            for c_name in recipe_item["class"]:
+                split_c_name = c_name.split('-')
+                for name in names:
+                    if name in split_c_name:
+                        list.append(recipe_item)
+                        return list
+                split_c_name = c_name.split(' ')
+                for name in names:
+                    if name in split_c_name:
+                        list.append(recipe_item)
+                        return list
+                split_c_name = c_name.split('__')
+                for name in names:
+                    if name in split_c_name:
+                        list.append(recipe_item)
+                        return list
 
     return ['empty']
 
